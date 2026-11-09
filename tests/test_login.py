@@ -1,38 +1,10 @@
 """Login tests: check the HTTP response and the MySQL rows it should touch."""
 
 from config import ADMIN, BASE_URL
+from db_helpers import get_user, latest_login_log, login_log_count
 
 LOGIN_URL = f"{BASE_URL}/api/user/login"
 CURRENT_URL = f"{BASE_URL}/api/admin/user/current"
-
-
-def login_log_count(db, user_name):
-    with db.cursor() as cursor:
-        cursor.execute(
-            "select count(*) as total from t_user_event_log where user_name = %s",
-            (user_name,),
-        )
-        return cursor.fetchone()["total"]
-
-
-def latest_login_log(db, user_name):
-    with db.cursor() as cursor:
-        cursor.execute(
-            "select user_name, real_name, content, create_time"
-            " from t_user_event_log where user_name = %s order by id desc limit 1",
-            (user_name,),
-        )
-        return cursor.fetchone()
-
-
-def get_user(db, user_name):
-    with db.cursor() as cursor:
-        cursor.execute(
-            "select id, user_name, real_name, role, status, deleted + 0 as deleted"
-            " from t_user where user_name = %s and deleted = 0",
-            (user_name,),
-        )
-        return cursor.fetchone()
 
 
 def test_login_success_returns_code_1(api):
